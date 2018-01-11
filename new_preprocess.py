@@ -8,6 +8,7 @@ from scipy import stats
 from scipy.stats import skew
 from scipy.stats import norm
 from preprocess_funs import *
+from config import path_prefix, data_prefix
 
 bsmtFinType_df = Series([0, 1, 2, 3, 4, 5, 6], index=['NA', 'Unf', 'LwQ', 'Rec', 'BLQ', 'ALQ', 'GLQ'], dtype = int)
 
@@ -23,8 +24,8 @@ centralAir_df = Series([0, 1], index=['N', 'Y'], dtype = int)
 
 paved_drive_df = Series([0, 1, 2], index=['N', 'P', 'Y'], dtype = int)
 
-train = pd.read_csv('/Users/xueweiyao/Documents/house price/train.csv')
-test = pd.read_csv('/Users/xueweiyao/Documents/house price/test.csv')
+train = pd.read_csv(data_prefix + 'train.csv')
+test = pd.read_csv(data_prefix + 'test.csv')
 
 train.drop(['SalePrice'], axis=1, inplace=True)
 train_index = train.index
@@ -60,7 +61,7 @@ most_frequent_eletrical = data.Electrical.value_counts().sort_values(ascending=F
 data.Electrical[data.Electrical.isnull()] = most_frequent_eletrical
 
 # BsmtSF fill
-data.loc[data.TotalBsmtSF.isna(), ['TotalBsmtSF', 'BsmtUnfSF', 'BsmtFinSF2', 'BsmtFinSF1']] = 0
+data.loc[data.TotalBsmtSF.isnull(), ['TotalBsmtSF', 'BsmtUnfSF', 'BsmtFinSF2', 'BsmtFinSF1']] = 0
 
 # BsmtType1 fill
 data.loc[(data.BsmtFinType1.isnull()) & (data.BsmtFinSF1 == 0), 'BsmtFinType1'] = 'NA'
@@ -103,14 +104,14 @@ data.BsmtFullBath.fillna(0, inplace=True)
 data.BsmtHalfBath.fillna(0, inplace=True)
 
 # Mas fill
-data.loc[(data.MasVnrArea.isna()) & (data.MasVnrType.isnull()), 'MasVnrArea'] = 0
-data.loc[(data.MasVnrArea.isna()) & (data.MasVnrType.isnull()), 'MasVnrType'] = 'NA'
+data.loc[(data.MasVnrArea.isnull()) & (data.MasVnrType.isnull()), 'MasVnrArea'] = 0
+data.loc[(data.MasVnrArea.isnull()) & (data.MasVnrType.isnull()), 'MasVnrType'] = 'NA'
 data.MasVnrType.fillna('BrkCmn', inplace=True)
 
 # Lot fill
 lot_median = data[['Neighborhood', 'LotFrontage']].groupby('Neighborhood').median()
-neighborhood = data.loc[data.LotFrontage.isna(), 'Neighborhood']
-data.loc[data.LotFrontage.isna(), 'LotFrontage'] = lot_median.loc[neighborhood].values
+neighborhood = data.loc[data.LotFrontage.isnull(), 'Neighborhood']
+data.loc[data.LotFrontage.isnull(), 'LotFrontage'] = lot_median.loc[neighborhood].values
 
 # FireplaceQu fill
 data.FireplaceQu.fillna('NA', inplace=True)
@@ -135,7 +136,22 @@ data.LotFrontage = np.log1p(data.LotFrontage)
 data['1stFlrSF'] = np.log1p(data['1stFlrSF'])
 data.GrLivArea = np.log1p(data.GrLivArea)
 
+# extra features
+data['hasPool'] = data['PoolArea'].apply(lambda x : 0 if x == 0 else 1)
+data['has3SsnPorch'] = data['3SsnPorch'].apply(lambda x : 0 if x == 0 else 1)
+data['hasEnclosedPorch'] = data['EnclosedPorch'].apply(lambda x : 0 if x == 0 else 1)
+data['hasGarage'] = data['GarageFinish'].apply(lambda x : 0 if x == 0 else 1)
+data['isMasVnrAreaZero'] = data['MasVnrArea'].apply(lambda x : 0 if x == 0 else 1)
+data['hasOpenPorchSF'] = data['OpenPorchSF'].apply(lambda x : 0 if x == 0 else 1)
+data['hasWoodDeckSF'] = data['WoodDeckSF'].apply(lambda x : 0 if x == 0 else 1)
+data['isBsmtUnfSFZero'] = data['BsmtUnfSF'].apply(lambda x : 0 if x == 0 else 1)
+data['is2ndFlrSFZero'] = data['2ndFlrSF'].apply(lambda x : 0 if x == 0 else 1)
+data['hasBsmtFinSF1'] = data['BsmtFinSF1'].apply(lambda x : 0 if x == 0 else 1)
+data['hasTotalBsmtSF'] = data['TotalBsmtSF'].apply(lambda x : 0 if x == 0 else 1)
+data['hasGarageArea'] = data['GarageArea'].apply(lambda x : 0 if x == 0 else 1)
+
 # standardize
+standardizing_features = []
 data.loc[:, data.dtypes != 'object'], scaler = normalization(data.loc[:, data.dtypes != 'object'])
 
 #### numrical
@@ -163,18 +179,7 @@ data['Neighborhood_rich'] = data.Neighborhood.apply(lambda neighbor: 1 if neighb
 data['YrSoldBuket'] = pd.cut(data.YrSold, 10, labels=range(10))
 data['YearBuiltBuket'] = pd.cut(data.YearBuilt, 10, labels=range(10))
 data['GarageYrBltBuket'] = pd.cut(data.GarageYrBlt, 10, labels=range(10))
-data['hasPool'] = data['PoolArea'].apply(lambda x : 0 if x == 0 else 1)
-data['has3SsnPorch'] = data['3SsnPorch'].apply(lambda x : 0 if x == 0 else 1)
-data['hasEnclosedPorch'] = data['EnclosedPorch'].apply(lambda x : 0 if x == 0 else 1)
-data['hasGarage'] = data['GarageFinish'].apply(lambda x : 0 if x == 0 else 1)
-data['isMasVnrAreaZero'] = data['MasVnrArea'].apply(lambda x : 0 if x == 0 else 1)
-data['hasOpenPorchSF'] = data['OpenPorchSF'].apply(lambda x : 0 if x == 0 else 1)
-data['hasWoodDeckSF'] = data['WoodDeckSF'].apply(lambda x : 0 if x == 0 else 1)
-data['isBsmtUnfSFZero'] = data['BsmtUnfSF'].apply(lambda x : 0 if x == 0 else 1)
-data['is2ndFlrSFZero'] = data['2ndFlrSF'].apply(lambda x : 0 if x == 0 else 1)
-data['hasBsmtFinSF1'] = data['BsmtFinSF1'].apply(lambda x : 0 if x == 0 else 1)
-data['hasTotalBsmtSF'] = data['TotalBsmtSF'].apply(lambda x : 0 if x == 0 else 1)
-data['hasGarageArea'] = data['GarageArea'].apply(lambda x : 0 if x == 0 else 1)
+data['isOverallQualPool'] = data['OverallQual'].apply(lambda x : 1 if x < -2.9 else 0)
 # data['OverallQual1'] = data['OverallQual'].apply(lambda x : 0 if x <= 2 else x - 2)
 # data['OverallQual2'] = data['OverallQual'].apply(lambda x : 3 if x > 2 else x)
 
@@ -196,7 +201,7 @@ for feature in categoric_features:
 data.drop(['Id'], axis = 1, inplace = True)
 
 # split train / test set
-train = pd.read_csv('/Users/xueweiyao/Documents/house price/train.csv')
+train = pd.read_csv(data_prefix + 'train.csv')
 new_train = data.loc[train_index]
 new_train['SalePrice'] = train['SalePrice']
 
@@ -204,5 +209,5 @@ new_train = new_train[new_train.GrLivArea <= 4000]
 new_test = data.drop(train_index)
 
 # save data
-new_train.to_csv('/Users/xueweiyao/Documents/house price/preprocessed_train.csv')
-new_test.to_csv('/Users/xueweiyao/Documents/house price/preprocessed_test.csv')
+new_train.to_csv(data_prefix + 'preprocessed_train.csv')
+new_test.to_csv(data_prefix + 'preprocessed_test.csv')

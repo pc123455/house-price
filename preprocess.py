@@ -11,11 +11,6 @@ if __name__ == "__main__":
     data, Electrical_default_value = set_null_value_mode(data, 'Electrical')
     data, MasVnrType_default_value = set_null_value_mode(data, 'MasVnrType')
 
-    data = discrete_dummy(data)
-    data, rfr_lot = set_LotFrontage(data)
-    data, rfr_mas = set_MasVnrArea(data)
-    data, rfr_gar = set_GarageYrBlt(data)
-
     data, rfc_BsmtQual = set_null_value_rfc(data, 'BsmtQual_.*')
     data, rfc_BsmtCond = set_null_value_rfc(data, 'BsmtCond_.*')
     data, rfc_BsmtExposure = set_null_value_rfc(data, 'BsmtExposure_.*')
@@ -62,9 +57,6 @@ if __name__ == "__main__":
     indecies = sale_corr[sale_corr['SalePrice'] > corr_thres]
 
     # out to file
-    joblib.dump(rfr_lot, prefix_path + 'rfr_lot.m')
-    joblib.dump(rfr_mas, prefix_path + 'rfr_mas.m')
-    joblib.dump(rfr_gar, prefix_path + 'rfr_gar.m')
     joblib.dump(scaler, prefix_path + 'standard_scaler.m')
     data.to_csv('/Users/xueweiyao/Documents/house price/prepared.csv')
     indecies.to_csv('/Users/xueweiyao/Documents/house price/correlation.csv')
