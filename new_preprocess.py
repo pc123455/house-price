@@ -127,17 +127,6 @@ data.PoolQC.fillna('NA', inplace=True)
 # MiscFeature fill
 data.MiscFeature.fillna('NA', inplace=True)
 
-# log process
-data.LotArea = np.log1p(data.LotArea)
-data.OpenPorchSF = np.log1p(data.OpenPorchSF)
-data.WoodDeckSF = np.log1p(data.WoodDeckSF)
-data.LotFrontage = np.log1p(data.LotFrontage)
-data['1stFlrSF'] = np.log1p(data['1stFlrSF'])
-data.GrLivArea = np.log1p(data.GrLivArea)
-
-# standardize
-data.loc[:, data.dtypes != 'object'], scaler = normalization(data.loc[:, data.dtypes != 'object'])
-
 #### numrical
 data.ExterQual = quality_df[data.ExterQual.values].values
 data.BsmtQual = quality_df[data.BsmtQual.values].values
@@ -157,12 +146,14 @@ data.BsmtExposure = exposure_df[data.BsmtExposure.values].values
 data.CentralAir = centralAir_df[data.CentralAir.values].values
 data.PavedDrive = paved_drive_df[data.PavedDrive.values].values
 
-# extra features
-data['Neighborhood_rich'] = 0
-data['Neighborhood_rich'] = data.Neighborhood.apply(lambda neighbor: 1 if neighbor in [u'StoneBr', u'NoRidge', u'NridgHt'] else 0)
-data['YrSoldBuket'] = pd.cut(data.YrSold, 10, labels=range(10))
-data['YearBuiltBuket'] = pd.cut(data.YearBuilt, 10, labels=range(10))
-data['GarageYrBltBuket'] = pd.cut(data.GarageYrBlt, 10, labels=range(10))
+# log process
+data.LotArea = np.log1p(data.LotArea)
+data.OpenPorchSF = np.log1p(data.OpenPorchSF)
+data.WoodDeckSF = np.log1p(data.WoodDeckSF)
+data.LotFrontage = np.log1p(data.LotFrontage)
+data['1stFlrSF'] = np.log1p(data['1stFlrSF'])
+data.GrLivArea = np.log1p(data.GrLivArea)
+
 data['hasPool'] = data['PoolArea'].apply(lambda x : 0 if x == 0 else 1)
 data['has3SsnPorch'] = data['3SsnPorch'].apply(lambda x : 0 if x == 0 else 1)
 data['hasEnclosedPorch'] = data['EnclosedPorch'].apply(lambda x : 0 if x == 0 else 1)
@@ -175,8 +166,35 @@ data['is2ndFlrSFZero'] = data['2ndFlrSF'].apply(lambda x : 0 if x == 0 else 1)
 data['hasBsmtFinSF1'] = data['BsmtFinSF1'].apply(lambda x : 0 if x == 0 else 1)
 data['hasTotalBsmtSF'] = data['TotalBsmtSF'].apply(lambda x : 0 if x == 0 else 1)
 data['hasGarageArea'] = data['GarageArea'].apply(lambda x : 0 if x == 0 else 1)
-# data['OverallQual1'] = data['OverallQual'].apply(lambda x : 0 if x <= 2 else x - 2)
-# data['OverallQual2'] = data['OverallQual'].apply(lambda x : 3 if x > 2 else x)
+data['isOverallQualLow'] = data['OverallQual'].apply(lambda x : 1 if x <= 2 else 0)
+data['YrSoldBuket'] = pd.cut(data.YrSold, 10, labels=range(10))
+data['YearBuiltBuket'] = pd.cut(data.YearBuilt, 10, labels=range(10))
+data['GarageYrBltBuket'] = pd.cut(data.GarageYrBlt, 10, labels=range(10))
+
+# standardize
+# standardizing_features = [u'MSSubClass', u'LotFrontage', u'LotArea', u'YearBuilt', u'YearRemodAdd', u'MasVnrArea',
+#        u'BsmtFinSF1', u'BsmtFinSF2', u'BsmtUnfSF', u'TotalBsmtSF', u'1stFlrSF',
+#        u'2ndFlrSF', u'LowQualFinSF', u'GrLivArea', u'TotRmsAbvGrd', u'GarageArea',
+#        u'WoodDeckSF', u'OpenPorchSF', u'EnclosedPorch', u'3SsnPorch',
+#        u'ScreenPorch', u'PoolArea', u'MiscVal', u'MoSold', u'YrSold', u'OverallQual', u'YrSoldBuket', u'YearBuiltBuket', u'GarageYrBltBuket']
+standardizing_features = [u'LotFrontage', u'LotArea',
+       u'YearBuilt', u'YearRemodAdd', u'MasVnrArea',
+       u'BsmtFinSF1', u'BsmtFinSF2',
+       u'BsmtUnfSF', u'TotalBsmtSF', u'1stFlrSF',
+       u'2ndFlrSF', u'LowQualFinSF', u'GrLivArea', u'BsmtFullBath',
+       u'BsmtHalfBath', u'FullBath', u'HalfBath', u'BedroomAbvGr',
+       u'KitchenAbvGr', u'TotRmsAbvGrd', u'Fireplaces',
+       u'FireplaceQu', u'GarageYrBlt', u'GarageCars',
+       u'GarageArea',
+       u'WoodDeckSF', u'OpenPorchSF', u'EnclosedPorch', u'3SsnPorch',
+       u'ScreenPorch', u'PoolArea', u'MiscVal', u'MoSold',
+       u'YrSold', u'YrSoldBuket',
+       u'YearBuiltBuket', u'GarageYrBltBuket']
+data.loc[:, standardizing_features], scaler = normalization(data.loc[:, standardizing_features])
+
+# extra features
+data['Neighborhood_rich'] = 0
+data['Neighborhood_rich'] = data.Neighborhood.apply(lambda neighbor: 1 if neighbor in [u'StoneBr', u'NoRidge', u'NridgHt'] else 0)
 
 ## dummy
 categoric_features = [u'MSZoning', u'Street', u'Alley', u'LotShape', u'LandContour',

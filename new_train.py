@@ -11,7 +11,11 @@ from sklearn.preprocessing import PolynomialFeatures
 import seaborn as sns
 
 def rmse(test, predict):
-    return np.sqrt(np.sum(np.square(prediction - test_y)) / len(test))
+    return np.sqrt(np.sum(np.square(predict - test)) / len(test))
+
+def score(model, X, y):
+    prediction = model.predict(X)
+    return np.sum(np.square(np.expm1(prediction) - np.expm1(y)))
 
 if __name__ == '__main__':
     data = pd.read_csv('/Users/xueweiyao/Documents/house price/preprocessed_train.csv')
@@ -26,34 +30,20 @@ if __name__ == '__main__':
     indecies = correlation.index
     data = data[indecies]
 
-    # cross validation split
-    split_train, split_test = cross_validation.train_test_split(data, test_size=0.3, random_state=0)
-
-    # train
-    train = split_train
-    test = split_test
-
-    train_X = train.drop(['SalePrice'], axis=1).fillna(0).as_matrix()
-    train_y = train['SalePrice'].as_matrix()
-    train_y = np.log1p(train_y)
-
-    test_X = test.drop(['SalePrice'], axis=1).fillna(0).as_matrix()
-    test_y = test['SalePrice'].as_matrix()
-
+    # cross validation
+    X = data.drop(['SalePrice'], axis=1).fillna(0).as_matrix()
+    y = np.log1p(data['SalePrice'].as_matrix())
     model = Pipeline([('poly', PolynomialFeatures(degree=2)),
-                      ('ridge', linear_model.Ridge(alpha=2800, copy_X=True))])
-                      # ('ridge', linear_model.Lasso(alpha=0.0112, copy_X=True))])
-    # # model = Pipeline([('poly', PolynomialFeatures(degree = 2)),
-    # #                   ('svr', svm.SVR())])
-    # #model = linear_model.LassoLars(alpha=0.01, copy_X=True)
-    model.fit(train_X, train_y)
+                      ('ridge', linear_model.Ridge(alpha=1300, copy_X=True))])
+                      # ('lasso', linear_model.Lasso(alpha=0.009, copy_X=True))])
+    # # # model = Pipeline([('poly', PolynomialFeatures(degree = 2)),
+    # # #                   ('svr', svm.SVR())])
+    cv_res = cross_validation.cross_val_score(model, X, y, cv = 5, scoring = score)
+    print np.mean(cv_res)
 
-    prediction = model.predict(test_X)
-    prediction = np.reshape(prediction, np.shape(prediction)[0])
-    prediction = np.expm1(prediction)
-    # test_y = np.reshape(test_y, np.shape(test_y)[0])
+    # train model
+    model.fit(X, y)
 
-    print rmse(test_y, prediction)
-    print np.sum(np.square(prediction - test_y))
+    # output to files
     joblib.dump(model, '/Users/xueweiyao/Documents/house price/model.m')
     correlation.to_csv('/Users/xueweiyao/Documents/house price/corr.csv')
