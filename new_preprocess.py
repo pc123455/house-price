@@ -1,6 +1,6 @@
 from pandas import DataFrame, Series
-import pandas as pd
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import scipy
@@ -61,7 +61,7 @@ most_frequent_eletrical = data.Electrical.value_counts().sort_values(ascending=F
 data.Electrical[data.Electrical.isnull()] = most_frequent_eletrical
 
 # BsmtSF fill
-data.loc[data.TotalBsmtSF.isnull(), ['TotalBsmtSF', 'BsmtUnfSF', 'BsmtFinSF2', 'BsmtFinSF1']] = 0
+data.loc[data.TotalBsmtSF.isna(), ['TotalBsmtSF', 'BsmtUnfSF', 'BsmtFinSF2', 'BsmtFinSF1']] = 0
 
 # BsmtType1 fill
 data.loc[(data.BsmtFinType1.isnull()) & (data.BsmtFinSF1 == 0), 'BsmtFinType1'] = 'NA'
@@ -104,14 +104,14 @@ data.BsmtFullBath.fillna(0, inplace=True)
 data.BsmtHalfBath.fillna(0, inplace=True)
 
 # Mas fill
-data.loc[(data.MasVnrArea.isnull()) & (data.MasVnrType.isnull()), 'MasVnrArea'] = 0
-data.loc[(data.MasVnrArea.isnull()) & (data.MasVnrType.isnull()), 'MasVnrType'] = 'NA'
+data.loc[(data.MasVnrArea.isna()) & (data.MasVnrType.isnull()), 'MasVnrArea'] = 0
+data.loc[(data.MasVnrArea.isna()) & (data.MasVnrType.isnull()), 'MasVnrType'] = 'NA'
 data.MasVnrType.fillna('BrkCmn', inplace=True)
 
 # Lot fill
 lot_median = data[['Neighborhood', 'LotFrontage']].groupby('Neighborhood').median()
-neighborhood = data.loc[data.LotFrontage.isnull(), 'Neighborhood']
-data.loc[data.LotFrontage.isnull(), 'LotFrontage'] = lot_median.loc[neighborhood].values
+neighborhood = data.loc[data.LotFrontage.isna(), 'Neighborhood']
+data.loc[data.LotFrontage.isna(), 'LotFrontage'] = lot_median.loc[neighborhood].values
 
 # FireplaceQu fill
 data.FireplaceQu.fillna('NA', inplace=True)
@@ -155,48 +155,38 @@ data.LotFrontage = np.log1p(data.LotFrontage)
 data['1stFlrSF'] = np.log1p(data['1stFlrSF'])
 data.GrLivArea = np.log1p(data.GrLivArea)
 
-data['hasPool'] = data['PoolArea'].apply(lambda x : 0 if x == 0 else 1)
-data['has3SsnPorch'] = data['3SsnPorch'].apply(lambda x : 0 if x == 0 else 1)
-data['hasEnclosedPorch'] = data['EnclosedPorch'].apply(lambda x : 0 if x == 0 else 1)
-data['hasGarage'] = data['GarageFinish'].apply(lambda x : 0 if x == 0 else 1)
-data['isMasVnrAreaZero'] = data['MasVnrArea'].apply(lambda x : 0 if x == 0 else 1)
-data['hasOpenPorchSF'] = data['OpenPorchSF'].apply(lambda x : 0 if x == 0 else 1)
-data['hasWoodDeckSF'] = data['WoodDeckSF'].apply(lambda x : 0 if x == 0 else 1)
-data['isBsmtUnfSFZero'] = data['BsmtUnfSF'].apply(lambda x : 0 if x == 0 else 1)
-data['is2ndFlrSFZero'] = data['2ndFlrSF'].apply(lambda x : 0 if x == 0 else 1)
-data['hasBsmtFinSF1'] = data['BsmtFinSF1'].apply(lambda x : 0 if x == 0 else 1)
-data['hasTotalBsmtSF'] = data['TotalBsmtSF'].apply(lambda x : 0 if x == 0 else 1)
-data['hasGarageArea'] = data['GarageArea'].apply(lambda x : 0 if x == 0 else 1)
-data['isOverallQualLow'] = data['OverallQual'].apply(lambda x : 1 if x <= 2 else 0)
+# extra features
+data['Neighborhood_rich'] = 0
+data['Neighborhood_rich'] = data.Neighborhood.apply(lambda neighbor: 1 if neighbor in [u'StoneBr', u'NoRidge', u'NridgHt'] else 0)
+data['hasPool'] = data['PoolArea'].apply(lambda x: 0 if x == 0 else 1)
+data['has3SsnPorch'] = data['3SsnPorch'].apply(lambda x: 0 if x == 0 else 1)
+data['hasEnclosedPorch'] = data['EnclosedPorch'].apply(lambda x: 0 if x == 0 else 1)
+data['hasGarage'] = data['GarageFinish'].apply(lambda x: 0 if x == 0 else 1)
+data['isMasVnrAreaZero'] = data['MasVnrArea'].apply(lambda x: 0 if x == 0 else 1)
+data['hasOpenPorchSF'] = data['OpenPorchSF'].apply(lambda x: 0 if x == 0 else 1)
+data['hasWoodDeckSF'] = data['WoodDeckSF'].apply(lambda x: 0 if x == 0 else 1)
+data['isBsmtUnfSFZero'] = data['BsmtUnfSF'].apply(lambda x: 0 if x == 0 else 1)
+data['is2ndFlrSFZero'] = data['2ndFlrSF'].apply(lambda x: 0 if x == 0 else 1)
+data['hasBsmtFinSF1'] = data['BsmtFinSF1'].apply(lambda x: 0 if x == 0 else 1)
+data['hasTotalBsmtSF'] = data['TotalBsmtSF'].apply(lambda x: 0 if x == 0 else 1)
+data['hasGarageArea'] = data['GarageArea'].apply(lambda x: 0 if x == 0 else 1)
+data['isOverallQualLow'] = data['OverallQual'].apply(lambda x: 1 if x <= 2 else 0)
 data['YrSoldBuket'] = pd.cut(data.YrSold, 10, labels=range(10))
 data['YearBuiltBuket'] = pd.cut(data.YearBuilt, 10, labels=range(10))
 data['GarageYrBltBuket'] = pd.cut(data.GarageYrBlt, 10, labels=range(10))
 
 # standardize
-# standardizing_features = [u'MSSubClass', u'LotFrontage', u'LotArea', u'YearBuilt', u'YearRemodAdd', u'MasVnrArea',
-#        u'BsmtFinSF1', u'BsmtFinSF2', u'BsmtUnfSF', u'TotalBsmtSF', u'1stFlrSF',
-#        u'2ndFlrSF', u'LowQualFinSF', u'GrLivArea', u'TotRmsAbvGrd', u'GarageArea',
-#        u'WoodDeckSF', u'OpenPorchSF', u'EnclosedPorch', u'3SsnPorch',
-#        u'ScreenPorch', u'PoolArea', u'MiscVal', u'MoSold', u'YrSold', u'OverallQual', u'YrSoldBuket', u'YearBuiltBuket', u'GarageYrBltBuket']
-standardizing_features = [u'LotFrontage', u'LotArea',
-       u'YearBuilt', u'YearRemodAdd', u'MasVnrArea',
-       u'BsmtFinSF1', u'BsmtFinSF2',
-       u'BsmtUnfSF', u'TotalBsmtSF', u'1stFlrSF',
-       u'2ndFlrSF', u'LowQualFinSF', u'GrLivArea', u'BsmtFullBath',
-       u'BsmtHalfBath', u'FullBath', u'HalfBath', u'BedroomAbvGr',
+standardizing_features = [u'LotFrontage', u'LotArea', u'YearBuilt', u'YearRemodAdd', u'MasVnrArea',
+       u'BsmtFinSF1', u'BsmtFinSF2', u'BsmtUnfSF', u'TotalBsmtSF', u'1stFlrSF',
+       u'2ndFlrSF', u'LowQualFinSF', u'GrLivArea',
        u'KitchenAbvGr', u'TotRmsAbvGrd', u'Fireplaces',
-       u'FireplaceQu', u'GarageYrBlt', u'GarageCars',
-       u'GarageArea',
+       u'FireplaceQu', u'GarageYrBlt', u'GarageCars', u'GarageArea',
        u'WoodDeckSF', u'OpenPorchSF', u'EnclosedPorch', u'3SsnPorch',
        u'ScreenPorch', u'PoolArea', u'MiscVal', u'MoSold',
-       u'YrSold', u'YrSoldBuket',
-       u'YearBuiltBuket', u'GarageYrBltBuket']
+       u'YrSold']
 data.loc[:, standardizing_features], scaler = normalization(data.loc[:, standardizing_features])
 
-# extra features
-data['Neighborhood_rich'] = 0
-data['Neighborhood_rich'] = data.Neighborhood.apply(lambda neighbor: 1 if neighbor in [u'StoneBr', u'NoRidge', u'NridgHt'] else 0)
-
+data.drop(['YrSold', 'YearBuilt', 'GarageYrBlt'], axis = 1, inplace = True)
 ## dummy
 categoric_features = [u'MSZoning', u'Street', u'Alley', u'LotShape', u'LandContour',
                       u'Utilities', u'LotConfig', u'LandSlope', u'Neighborhood',
@@ -219,7 +209,7 @@ train = pd.read_csv(data_prefix + 'train.csv')
 new_train = data.loc[train_index]
 new_train['SalePrice'] = train['SalePrice']
 
-new_train = new_train[new_train.GrLivArea <= 4000]
+new_train = new_train[train.GrLivArea <= 4000]
 new_test = data.drop(train_index)
 
 # save data
