@@ -9,6 +9,7 @@ from scipy.stats import skew
 from scipy.stats import norm
 from preprocess_funs import *
 from config import path_prefix, data_prefix
+from scipy.special import boxcox1p
 
 bsmtFinType_df = Series([0, 1, 2, 3, 4, 5, 6], index=['NA', 'Unf', 'LwQ', 'Rec', 'BLQ', 'ALQ', 'GLQ'], dtype = int)
 
@@ -148,12 +149,27 @@ data.CentralAir = centralAir_df[data.CentralAir.values].values
 data.PavedDrive = paved_drive_df[data.PavedDrive.values].values
 
 # log process
-data.LotArea = np.log1p(data.LotArea)
-data.OpenPorchSF = np.log1p(data.OpenPorchSF)
-data.WoodDeckSF = np.log1p(data.WoodDeckSF)
-data.LotFrontage = np.log1p(data.LotFrontage)
-data['1stFlrSF'] = np.log1p(data['1stFlrSF'])
-data.GrLivArea = np.log1p(data.GrLivArea)
+# data.LotArea = np.log1p(data.LotArea)
+# data.OpenPorchSF = np.log1p(data.OpenPorchSF)
+# data.WoodDeckSF = np.log1p(data.WoodDeckSF)
+# data.LotFrontage = np.log1p(data.LotFrontage)
+# data['1stFlrSF'] = np.log1p(data['1stFlrSF'])
+# data.GrLivArea = np.log1p(data.GrLivArea)
+
+# box cox transform
+# index = data.dtypes[data.dtypes != 'object'].index
+index = [u'LotFrontage', u'LotArea', u'YearBuilt', u'YearRemodAdd', u'MasVnrArea',
+       u'BsmtFinSF1', u'BsmtFinSF2', u'BsmtUnfSF', u'TotalBsmtSF', u'1stFlrSF',
+       u'2ndFlrSF', u'LowQualFinSF', u'GrLivArea',
+       u'KitchenAbvGr', u'TotRmsAbvGrd', u'Fireplaces',
+       u'FireplaceQu', u'GarageYrBlt', u'GarageCars', u'GarageArea',
+       u'WoodDeckSF', u'OpenPorchSF', u'EnclosedPorch', u'3SsnPorch',
+       u'ScreenPorch', u'PoolArea', u'MiscVal', u'MoSold', u'YrSold']
+skewness = data[index].skew().sort_values()
+features = skewness[np.abs(skewness) > 0.75].index
+lam = 0.15
+for feat in features:
+    data[feat] = boxcox1p(data[feat], lam)
 
 # extra features
 data['Neighborhood_rich'] = 0
@@ -165,9 +181,10 @@ data['hasGarage'] = data['GarageFinish'].apply(lambda x: 0 if x == 0 else 1)
 data['isMasVnrAreaZero'] = data['MasVnrArea'].apply(lambda x: 0 if x == 0 else 1)
 data['hasOpenPorchSF'] = data['OpenPorchSF'].apply(lambda x: 0 if x == 0 else 1)
 data['hasWoodDeckSF'] = data['WoodDeckSF'].apply(lambda x: 0 if x == 0 else 1)
-data['isBsmtUnfSFZero'] = data['BsmtUnfSF'].apply(lambda x: 0 if x == 0 else 1)
+data['hasBsmtUnfSF'] = data['BsmtUnfSF'].apply(lambda x: 0 if x == 0 else 1)
 data['is2ndFlrSFZero'] = data['2ndFlrSF'].apply(lambda x: 0 if x == 0 else 1)
 data['hasBsmtFinSF1'] = data['BsmtFinSF1'].apply(lambda x: 0 if x == 0 else 1)
+data['hasBsmtFinSF2'] = data['BsmtFinSF2'].apply(lambda x: 0 if x == 0 else 1)
 data['hasTotalBsmtSF'] = data['TotalBsmtSF'].apply(lambda x: 0 if x == 0 else 1)
 data['hasGarageArea'] = data['GarageArea'].apply(lambda x: 0 if x == 0 else 1)
 data['isOverallQualLow'] = data['OverallQual'].apply(lambda x: 1 if x <= 2 else 0)
@@ -182,11 +199,10 @@ standardizing_features = [u'LotFrontage', u'LotArea', u'YearBuilt', u'YearRemodA
        u'KitchenAbvGr', u'TotRmsAbvGrd', u'Fireplaces',
        u'FireplaceQu', u'GarageYrBlt', u'GarageCars', u'GarageArea',
        u'WoodDeckSF', u'OpenPorchSF', u'EnclosedPorch', u'3SsnPorch',
-       u'ScreenPorch', u'PoolArea', u'MiscVal', u'MoSold',
-       u'YrSold']
+       u'ScreenPorch', u'PoolArea', u'MiscVal', u'MoSold', u'YrSold']
 data.loc[:, standardizing_features], scaler = normalization(data.loc[:, standardizing_features])
 
-data.drop(['YrSold', 'YearBuilt', 'GarageYrBlt'], axis = 1, inplace = True)
+# data.drop(['YrSold', 'YearBuilt', 'GarageYrBlt'], axis = 1, inplace = True)
 ## dummy
 categoric_features = [u'MSZoning', u'Street', u'Alley', u'LotShape', u'LandContour',
                       u'Utilities', u'LotConfig', u'LandSlope', u'Neighborhood',
