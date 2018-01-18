@@ -62,7 +62,7 @@ def normalization(data, scaler = None):
     data = data.fillna(0)
     X = data.as_matrix()
     if scaler is None:
-        scaler = preprocessing.StandardScaler(with_std = 5)
+        scaler = preprocessing.RobustScaler()
         scaler.fit(X)
 
     data[data.columns] = scaler.fit_transform(X)

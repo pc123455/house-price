@@ -36,9 +36,9 @@ train_y = train['SalePrice'].as_matrix()
 test_X = test.drop(['SalePrice'], axis = 1).as_matrix()
 test_y = test['SalePrice'].as_matrix()
 
-poly = PolynomialFeatures(2)
-train_X = poly.fit_transform(train_X)
-test_X = poly.fit_transform(test_X)
+# poly = PolynomialFeatures(2)
+# train_X = poly.fit_transform(train_X)
+# test_X = poly.fit_transform(test_X)
 
 # create dataset for lightgbm
 
