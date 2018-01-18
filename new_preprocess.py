@@ -153,7 +153,13 @@ data.OpenPorchSF = np.log1p(data.OpenPorchSF)
 data.WoodDeckSF = np.log1p(data.WoodDeckSF)
 data.LotFrontage = np.log1p(data.LotFrontage)
 data['1stFlrSF'] = np.log1p(data['1stFlrSF'])
+data.MasVnrArea = np.log1p(data.MasVnrArea)
+data.BsmtFinSF2 = np.log1p(data.BsmtFinSF2)
+data.BsmtUnfSF = np.log1p(data.BsmtUnfSF)
+data.TotalBsmtSF = np.log1p(data.TotalBsmtSF)
 data.GrLivArea = np.log1p(data.GrLivArea)
+data.GarageArea = np.log1p(data.GarageArea)
+data.ScreenPorch = np.log1p(data.ScreenPorch)
 
 # extra features
 data['Neighborhood_rich'] = 0
@@ -162,14 +168,16 @@ data['hasPool'] = data['PoolArea'].apply(lambda x: 0 if x == 0 else 1)
 data['has3SsnPorch'] = data['3SsnPorch'].apply(lambda x: 0 if x == 0 else 1)
 data['hasEnclosedPorch'] = data['EnclosedPorch'].apply(lambda x: 0 if x == 0 else 1)
 data['hasGarage'] = data['GarageFinish'].apply(lambda x: 0 if x == 0 else 1)
-data['isMasVnrAreaZero'] = data['MasVnrArea'].apply(lambda x: 0 if x == 0 else 1)
+data['hasMasVnrArea'] = data['MasVnrArea'].apply(lambda x: 0 if x == 0 else 1)
 data['hasOpenPorchSF'] = data['OpenPorchSF'].apply(lambda x: 0 if x == 0 else 1)
 data['hasWoodDeckSF'] = data['WoodDeckSF'].apply(lambda x: 0 if x == 0 else 1)
-data['isBsmtUnfSFZero'] = data['BsmtUnfSF'].apply(lambda x: 0 if x == 0 else 1)
 data['is2ndFlrSFZero'] = data['2ndFlrSF'].apply(lambda x: 0 if x == 0 else 1)
 data['hasBsmtFinSF1'] = data['BsmtFinSF1'].apply(lambda x: 0 if x == 0 else 1)
+data['hasBsmtFinSF2'] = data['BsmtFinSF2'].apply(lambda x: 0 if x == 0 else 1)
+data['hasBsmtUnfSF'] = data['BsmtUnfSF'].apply(lambda x: 0 if x == 0 else 1)
 data['hasTotalBsmtSF'] = data['TotalBsmtSF'].apply(lambda x: 0 if x == 0 else 1)
 data['hasGarageArea'] = data['GarageArea'].apply(lambda x: 0 if x == 0 else 1)
+data['hasScreenPorch'] = data['ScreenPorch'].apply(lambda x: 0 if x == 0 else 1)
 data['isOverallQualLow'] = data['OverallQual'].apply(lambda x: 1 if x <= 2 else 0)
 data['YrSoldBuket'] = pd.cut(data.YrSold, 10, labels=range(10))
 data['YearBuiltBuket'] = pd.cut(data.YearBuilt, 10, labels=range(10))
@@ -186,7 +194,7 @@ standardizing_features = [u'LotFrontage', u'LotArea', u'YearBuilt', u'YearRemodA
        u'YrSold']
 data.loc[:, standardizing_features], scaler = normalization(data.loc[:, standardizing_features])
 
-data.drop(['YrSold', 'YearBuilt', 'GarageYrBlt'], axis = 1, inplace = True)
+data.drop(['YrSold'], axis = 1, inplace = True)
 ## dummy
 categoric_features = [u'MSZoning', u'Street', u'Alley', u'LotShape', u'LandContour',
                       u'Utilities', u'LotConfig', u'LandSlope', u'Neighborhood',
