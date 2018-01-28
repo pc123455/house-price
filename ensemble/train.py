@@ -4,13 +4,10 @@
 import pandas as pd
 from pandas import DataFrame
 import numpy as np
-from sklearn import ensemble, model_selection
+from sklearn import model_selection
 from sklearn.externals import joblib
-from sklearn import linear_model
-from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import PolynomialFeatures
 import seaborn as sns
-from config import data_prefix, path_prefix
+from config import data_prefix
 from ensemble.models import EnsenbleModel
 
 def rmse(test, predict):
@@ -31,10 +28,11 @@ if __name__ == '__main__':
     correlation = sale_corr[np.abs(sale_corr['SalePrice']) > corr_thres]
     correlation.index.name = 'residual'
     indecies = correlation.index
+    # SalePrice.sort_values(ascending=False)
     data = data[indecies]
 
     # cross validation
-    X = data.drop(['SalePrice'], axis=1).fillna(0).as_matrix()
+    X = data.drop(['SalePrice'], axis=1).as_matrix()
     y = np.log1p(data['SalePrice'].as_matrix())
 
     models = EnsenbleModel()
