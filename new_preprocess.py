@@ -159,7 +159,7 @@ data.PavedDrive = paved_drive_df[data.PavedDrive.values].values
 # box cox transform
 # index = data.dtypes[data.dtypes != 'object'].index
 index = [u'LotFrontage', u'LotArea', u'YearBuilt', u'YearRemodAdd', u'MasVnrArea',
-       u'BsmtFinSF1', u'BsmtFinSF2', u'BsmtUnfSF', u'TotalBsmtSF', u'1stFlrSF',
+       u'BsmtFinSF1', u'BsmtFinSF2', u'BsmtUnfSF', u'1stFlrSF',
        u'2ndFlrSF', u'LowQualFinSF', u'GrLivArea',
        u'KitchenAbvGr', u'TotRmsAbvGrd', u'Fireplaces',
        u'FireplaceQu', u'GarageYrBlt', u'GarageCars', u'GarageArea',
@@ -188,6 +188,7 @@ data['hasBsmtFinSF2'] = data['BsmtFinSF2'].apply(lambda x: 0 if x == 0 else 1)
 data['hasTotalBsmtSF'] = data['TotalBsmtSF'].apply(lambda x: 0 if x == 0 else 1)
 data['hasGarageArea'] = data['GarageArea'].apply(lambda x: 0 if x == 0 else 1)
 data['isOverallQualLow'] = data['OverallQual'].apply(lambda x: 1 if x <= 2 else 0)
+data['isHighPriceMonth'] = data['MoSold'].apply(lambda x: 1 if x >= 7 and x <= 9 else 0)
 data['YrSoldBuket'] = pd.cut(data.YrSold, 10, labels=range(10))
 data['YearBuiltBuket'] = pd.cut(data.YearBuilt, 10, labels=range(10))
 data['GarageYrBltBuket'] = pd.cut(data.GarageYrBlt, 10, labels=range(10))
