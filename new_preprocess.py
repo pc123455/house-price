@@ -186,10 +186,9 @@ data['hasMasVnrArea'] = data['MasVnrArea'].apply(lambda x: 0 if x == 0 else 1)
 data['hasOpenPorchSF'] = data['OpenPorchSF'].apply(lambda x: 0 if x == 0 else 1)
 data['hasWoodDeckSF'] = data['WoodDeckSF'].apply(lambda x: 0 if x == 0 else 1)
 data['hasBsmtUnfSF'] = data['BsmtUnfSF'].apply(lambda x: 0 if x == 0 else 1)
-data['is2ndFlrSFZero'] = data['2ndFlrSF'].apply(lambda x: 0 if x == 0 else 1)
+data['has2ndFlrSF'] = data['2ndFlrSF'].apply(lambda x: 0 if x == 0 else 1)
 data['hasBsmtFinSF1'] = data['BsmtFinSF1'].apply(lambda x: 0 if x == 0 else 1)
 data['hasBsmtFinSF2'] = data['BsmtFinSF2'].apply(lambda x: 0 if x == 0 else 1)
-data['hasBsmtUnfSF'] = data['BsmtUnfSF'].apply(lambda x: 0 if x == 0 else 1)
 data['hasTotalBsmtSF'] = data['TotalBsmtSF'].apply(lambda x: 0 if x == 0 else 1)
 data['hasGarageArea'] = data['GarageArea'].apply(lambda x: 0 if x == 0 else 1)
 data['hasScreenPorch'] = data['ScreenPorch'].apply(lambda x: 0 if x == 0 else 1)
@@ -209,7 +208,7 @@ standardizing_features = [u'LotFrontage', u'LotArea', u'YearBuilt', u'YearRemodA
        u'YrSold']
 data.loc[:, standardizing_features], scaler = normalization(data.loc[:, standardizing_features])
 
-# data.drop(['YrSold', 'YearBuilt', 'GarageYrBlt'], axis = 1, inplace = True)
+data.drop(['YrSold'], axis = 1, inplace = True)
 ## dummy
 categoric_features = [u'MSZoning', u'Street', u'Alley', u'LotShape', u'LandContour',
                       u'Utilities', u'LotConfig', u'LandSlope', u'Neighborhood',
