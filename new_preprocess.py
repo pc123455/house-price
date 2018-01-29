@@ -148,33 +148,6 @@ data.BsmtExposure = exposure_df[data.BsmtExposure.values].values
 data.CentralAir = centralAir_df[data.CentralAir.values].values
 data.PavedDrive = paved_drive_df[data.PavedDrive.values].values
 
-# log process
-# data.LotArea = np.log1p(data.LotArea)
-# data.OpenPorchSF = np.log1p(data.OpenPorchSF)
-# data.WoodDeckSF = np.log1p(data.WoodDeckSF)
-# data.LotFrontage = np.log1p(data.LotFrontage)
-# data['1stFlrSF'] = np.log1p(data['1stFlrSF'])
-# data.MasVnrArea = np.log1p(data.MasVnrArea)
-# data.BsmtFinSF2 = np.log1p(data.BsmtFinSF2)
-# data.BsmtUnfSF = np.log1p(data.BsmtUnfSF)
-# data.TotalBsmtSF = np.log1p(data.TotalBsmtSF)
-# data.GrLivArea = np.log1p(data.GrLivArea)
-# data.GarageArea = np.log1p(data.GarageArea)
-# data.ScreenPorch = np.log1p(data.ScreenPorch)
-
-index = [u'LotFrontage', u'LotArea', u'YearBuilt', u'YearRemodAdd', u'MasVnrArea',
-       u'BsmtFinSF1', u'BsmtFinSF2', u'BsmtUnfSF', u'1stFlrSF',
-       u'2ndFlrSF', u'LowQualFinSF', u'GrLivArea',
-       u'KitchenAbvGr', u'TotRmsAbvGrd', u'Fireplaces',
-       u'FireplaceQu', u'GarageYrBlt', u'GarageCars', u'GarageArea',
-       u'WoodDeckSF', u'OpenPorchSF', u'EnclosedPorch', u'3SsnPorch',
-       u'ScreenPorch', u'PoolArea', u'MiscVal', u'MoSold', u'YrSold']
-skewness = data[index].skew().sort_values()
-features = skewness[np.abs(skewness) > 0.75].index
-lam = 0.15
-for feat in features:
-    data[feat] = boxcox1p(data[feat], lam)
-
 # extra features
 data['Neighborhood_rich'] = 0
 data['Neighborhood_rich'] = data.Neighborhood.apply(lambda neighbor: 1 if neighbor in [u'StoneBr', u'NoRidge', u'NridgHt'] else 0)
@@ -197,6 +170,33 @@ data['isHighPriceMonth'] = data['MoSold'].apply(lambda x: 1 if x >= 7 and x <= 9
 data['YrSoldBuket'] = pd.cut(data.YrSold, 10, labels=range(10))
 data['YearBuiltBuket'] = pd.cut(data.YearBuilt, 10, labels=range(10))
 data['GarageYrBltBuket'] = pd.cut(data.GarageYrBlt, 10, labels=range(10))
+
+# log process
+# data.LotArea = np.log1p(data.LotArea)
+# data.OpenPorchSF = np.log1p(data.OpenPorchSF)
+# data.WoodDeckSF = np.log1p(data.WoodDeckSF)
+# data.LotFrontage = np.log1p(data.LotFrontage)
+# data['1stFlrSF'] = np.log1p(data['1stFlrSF'])
+# data.MasVnrArea = np.log1p(data.MasVnrArea)
+# data.BsmtFinSF2 = np.log1p(data.BsmtFinSF2)
+# data.BsmtUnfSF = np.log1p(data.BsmtUnfSF)
+# data.TotalBsmtSF = np.log1p(data.TotalBsmtSF)
+# data.GrLivArea = np.log1p(data.GrLivArea)
+# data.GarageArea = np.log1p(data.GarageArea)
+# data.ScreenPorch = np.log1p(data.ScreenPorch)
+
+index = [u'LotFrontage', u'LotArea', u'YearBuilt', u'YearRemodAdd', u'MasVnrArea',
+       u'BsmtFinSF1', u'BsmtFinSF2', u'BsmtUnfSF', u'1stFlrSF',
+       u'2ndFlrSF', u'LowQualFinSF', u'GrLivArea',
+       u'KitchenAbvGr', u'TotRmsAbvGrd', u'Fireplaces',
+       u'FireplaceQu', u'GarageYrBlt', u'GarageCars', u'GarageArea',
+       u'WoodDeckSF', u'OpenPorchSF', u'EnclosedPorch', u'3SsnPorch',
+       u'ScreenPorch', u'PoolArea', u'MiscVal', u'MoSold', u'YrSold']
+skewness = data[index].skew().sort_values()
+features = skewness[np.abs(skewness) > 1].index
+lam = 0.15
+for feat in features:
+    data[feat] = boxcox1p(data[feat], lam)
 
 # standardize
 standardizing_features = [u'LotFrontage', u'LotArea', u'YearBuilt', u'YearRemodAdd', u'MasVnrArea',
