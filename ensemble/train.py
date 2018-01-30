@@ -41,7 +41,7 @@ if __name__ == '__main__':
 
 
     # train model
-    models.fit(X, y)
+    # models.fit(X, y)
 
     # output to files
     joblib.dump(models, data_prefix + 'models.m')

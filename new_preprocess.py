@@ -148,6 +148,29 @@ data.BsmtExposure = exposure_df[data.BsmtExposure.values].values
 data.CentralAir = centralAir_df[data.CentralAir.values].values
 data.PavedDrive = paved_drive_df[data.PavedDrive.values].values
 
+# extra features
+data['Neighborhood_rich'] = 0
+data['Neighborhood_rich'] = data.Neighborhood.apply(lambda neighbor: 1 if neighbor in [u'StoneBr', u'NoRidge', u'NridgHt'] else 0)
+data['hasPool'] = data['PoolArea'].apply(lambda x: 0 if x == 0 else 1)
+data['has3SsnPorch'] = data['3SsnPorch'].apply(lambda x: 0 if x == 0 else 1)
+data['hasEnclosedPorch'] = data['EnclosedPorch'].apply(lambda x: 0 if x == 0 else 1)
+data['hasGarage'] = data['GarageFinish'].apply(lambda x: 0 if x == 0 else 1)
+data['hasMasVnrArea'] = data['MasVnrArea'].apply(lambda x: 0 if x == 0 else 1)
+data['hasOpenPorchSF'] = data['OpenPorchSF'].apply(lambda x: 0 if x == 0 else 1)
+data['hasWoodDeckSF'] = data['WoodDeckSF'].apply(lambda x: 0 if x == 0 else 1)
+data['hasBsmtUnfSF'] = data['BsmtUnfSF'].apply(lambda x: 0 if x == 0 else 1)
+data['has2ndFlrSF'] = data['2ndFlrSF'].apply(lambda x: 0 if x == 0 else 1)
+data['hasBsmtFinSF1'] = data['BsmtFinSF1'].apply(lambda x: 0 if x == 0 else 1)
+data['hasBsmtFinSF2'] = data['BsmtFinSF2'].apply(lambda x: 0 if x == 0 else 1)
+data['hasTotalBsmtSF'] = data['TotalBsmtSF'].apply(lambda x: 0 if x == 0 else 1)
+data['hasGarageArea'] = data['GarageArea'].apply(lambda x: 0 if x == 0 else 1)
+data['hasScreenPorch'] = data['ScreenPorch'].apply(lambda x: 0 if x == 0 else 1)
+data['isOverallQualLow'] = data['OverallQual'].apply(lambda x: 1 if x <= 2 else 0)
+data['isHighPriceMonth'] = data['MoSold'].apply(lambda x: 1 if x >= 7 and x <= 9 else 0)
+data['YrSoldBuket'] = pd.cut(data.YrSold, 10, labels=range(10))
+data['YearBuiltBuket'] = pd.cut(data.YearBuilt, 10, labels=range(10))
+data['GarageYrBltBuket'] = pd.cut(data.GarageYrBlt, 10, labels=range(10))
+
 # log process
 # data.LotArea = np.log1p(data.LotArea)
 # data.OpenPorchSF = np.log1p(data.OpenPorchSF)
@@ -170,37 +193,10 @@ index = [u'LotFrontage', u'LotArea', u'YearBuilt', u'YearRemodAdd', u'MasVnrArea
        u'WoodDeckSF', u'OpenPorchSF', u'EnclosedPorch', u'3SsnPorch',
        u'ScreenPorch', u'PoolArea', u'MiscVal', u'MoSold', u'YrSold']
 skewness = data[index].skew().sort_values()
-features = skewness[np.abs(skewness) > 0.75].index
+features = skewness[np.abs(skewness) > 1].index
 lam = 0.15
 for feat in features:
     data[feat] = boxcox1p(data[feat], lam)
-
-# extra features
-data['Neighborhood_rich'] = 0
-data['Neighborhood_rich'] = data.Neighborhood.apply(lambda neighbor: 1 if neighbor in [u'StoneBr', u'NoRidge', u'NridgHt'] else 0)
-# data['Neighborhood_poor'] = data.Neighborhood.apply(lambda neighbor: 1 if neighbor in [u'MeadowV', u'IDOTRR'] else 0)
-data['hasHighSaleType'] = data['SaleType'].apply(lambda t: 1 if t in [u'New', u'Con'] else 0)
-data['hasHighSaleCondition'] = data['SaleCondition'].apply(lambda c: 1 if c in [u'Partial'] else 0)
-data['hasPool'] = data['PoolArea'].apply(lambda x: 0 if x == 0 else 1)
-data['has3SsnPorch'] = data['3SsnPorch'].apply(lambda x: 0 if x == 0 else 1)
-data['hasEnclosedPorch'] = data['EnclosedPorch'].apply(lambda x: 0 if x == 0 else 1)
-data['hasGarage'] = data['GarageFinish'].apply(lambda x: 0 if x == 0 else 1)
-data['hasMasVnrArea'] = data['MasVnrArea'].apply(lambda x: 0 if x == 0 else 1)
-data['hasOpenPorchSF'] = data['OpenPorchSF'].apply(lambda x: 0 if x == 0 else 1)
-data['hasWoodDeckSF'] = data['WoodDeckSF'].apply(lambda x: 0 if x == 0 else 1)
-data['hasBsmtUnfSF'] = data['BsmtUnfSF'].apply(lambda x: 0 if x == 0 else 1)
-data['has2ndFlrSF'] = data['2ndFlrSF'].apply(lambda x: 0 if x == 0 else 1)
-data['hasBsmtFinSF1'] = data['BsmtFinSF1'].apply(lambda x: 0 if x == 0 else 1)
-data['hasBsmtFinSF2'] = data['BsmtFinSF2'].apply(lambda x: 0 if x == 0 else 1)
-data['hasTotalBsmtSF'] = data['TotalBsmtSF'].apply(lambda x: 0 if x == 0 else 1)
-data['hasGarageArea'] = data['GarageArea'].apply(lambda x: 0 if x == 0 else 1)
-data['hasScreenPorch'] = data['ScreenPorch'].apply(lambda x: 0 if x == 0 else 1)
-data['isOverallQualLow'] = data['OverallQual'].apply(lambda x: 1 if x <= 2 else 0)
-# data['hasHighOverallCond'] = data['OverallCond'].apply(lambda x: 1 if x >= 7 and x <= 9 else 0)
-data['isHighPriceMonth'] = data['MoSold'].apply(lambda x: 1 if x >= 7 and x <= 9 else 0)
-data['YrSoldBuket'] = pd.cut(data.YrSold, 10, labels=range(10))
-data['YearBuiltBuket'] = pd.cut(data.YearBuilt, 10, labels=range(10))
-data['GarageYrBltBuket'] = pd.cut(data.GarageYrBlt, 10, labels=range(10))
 
 # standardize
 standardizing_features = [u'LotFrontage', u'LotArea', u'YearBuilt', u'YearRemodAdd', u'MasVnrArea',
@@ -220,7 +216,7 @@ categoric_features = [u'MSZoning', u'Street', u'Alley', u'LotShape', u'LandConto
                       u'Condition1', u'Condition2', u'BldgType', u'HouseStyle', u'RoofStyle',
                       u'RoofMatl', u'Exterior1st', u'Exterior2nd', u'MasVnrType',
                       u'Foundation', u'Heating', u'Electrical', u'Functional',
-                      u'GarageType', u'MiscFeature', u'SaleType', #u'BsmtFinType1',
+                      u'GarageType', u'MiscFeature', u'SaleType',
                       u'SaleCondition', u'OverallCond', u'YrSoldBuket', u'YearBuiltBuket', u'GarageYrBltBuket', u'MSSubClass']
 
 for feature in categoric_features:
