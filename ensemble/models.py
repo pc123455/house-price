@@ -13,8 +13,8 @@ class EnsenbleModel:
 
     def __init__(self, **kwargs):
         model_ridge = Pipeline([('poly', PolynomialFeatures(degree=2)),
-                      ('ridge', linear_model.Ridge(alpha=1100, copy_X=True))])
-        model_lasso = linear_model.Lasso(alpha=0.0001, copy_X=True)
+                      ('ridge', linear_model.Ridge(alpha=1500, copy_X=True))])
+        model_lasso = linear_model.Lasso(alpha=0.0002, copy_X=True)
         model_lgb = lgb.LGBMRegressor(boosting_type='gbdt',
                                       objective='regression',
                                       metric='l2',
@@ -52,14 +52,14 @@ class EnsenbleModel:
                                     missing=None)
         model_linear_xgb = xgb.XGBRegressor(max_depth=3,
                                      booster='gblinear',
+                                     silent = 0,
                                      learning_rate=0.8,
                                      n_estimators=6000,
                                      early_stopping_rounds = 100,
-                                     # silent=True,
                                      objective='reg:linear',
                                      nthread=-1,
                                      gamma=0.01,
-                                     min_child_weight=2,
+                                     min_child_weight=3,
                                      max_delta_step=0,
                                      subsample=0.70,
                                      colsample_bytree=0.6,
@@ -68,9 +68,10 @@ class EnsenbleModel:
                                      reg_lambda=1,
                                      scale_pos_weight=1,
                                      seed=1440,
+                                     eval_metric = 'rmse',
                                      missing=None)
         # self.models = {'ridge': model_ridge, 'lasso': model_lasso, 'lgb': model_lgb, 'xgb': model_linear_xgb}
-        self.models = {'xgb': model_linear_xgb}
+        self.models = {'lasso': model_lasso}
 
     def fit(self, X, y, **kwargs):
         for k, m in self.models.items():
@@ -81,7 +82,7 @@ class EnsenbleModel:
             elif k == 'xgb':
                 train_X, val_X = cross_validation.train_test_split(X, test_size=0.3, random_state=0)
                 train_y, val_y = cross_validation.train_test_split(y, test_size=0.3, random_state=0)
-                m.fit(train_X, train_y, eval_set=[(val_X, val_y)])
+                m.fit(train_X, train_y, eval_set = [(val_X, val_y)])
             else:
                 m.fit(X, y)
 
