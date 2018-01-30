@@ -165,7 +165,7 @@ data.PavedDrive = paved_drive_df[data.PavedDrive.values].values
 index = [u'LotFrontage', u'LotArea', u'YearBuilt', u'YearRemodAdd', u'MasVnrArea',
        u'BsmtFinSF1', u'BsmtFinSF2', u'BsmtUnfSF', u'1stFlrSF',
        u'2ndFlrSF', u'LowQualFinSF', u'GrLivArea',
-       u'KitchenAbvGr', u'TotRmsAbvGrd', u'Fireplaces',
+       u'KitchenAbvGr', u'TotRmsAbvGrd', u'Fireplaces', u'FireplaceQu',
        u'FireplaceQu', u'GarageYrBlt', u'GarageCars', u'GarageArea',
        u'WoodDeckSF', u'OpenPorchSF', u'EnclosedPorch', u'3SsnPorch',
        u'ScreenPorch', u'PoolArea', u'MiscVal', u'MoSold', u'YrSold']
@@ -178,6 +178,9 @@ for feat in features:
 # extra features
 data['Neighborhood_rich'] = 0
 data['Neighborhood_rich'] = data.Neighborhood.apply(lambda neighbor: 1 if neighbor in [u'StoneBr', u'NoRidge', u'NridgHt'] else 0)
+# data['Neighborhood_poor'] = data.Neighborhood.apply(lambda neighbor: 1 if neighbor in [u'MeadowV', u'IDOTRR'] else 0)
+data['hasHighSaleType'] = data['SaleType'].apply(lambda t: 1 if t in [u'New', u'Con'] else 0)
+data['hasHighSaleCondition'] = data['SaleCondition'].apply(lambda c: 1 if c in [u'Partial'] else 0)
 data['hasPool'] = data['PoolArea'].apply(lambda x: 0 if x == 0 else 1)
 data['has3SsnPorch'] = data['3SsnPorch'].apply(lambda x: 0 if x == 0 else 1)
 data['hasEnclosedPorch'] = data['EnclosedPorch'].apply(lambda x: 0 if x == 0 else 1)
@@ -193,6 +196,7 @@ data['hasTotalBsmtSF'] = data['TotalBsmtSF'].apply(lambda x: 0 if x == 0 else 1)
 data['hasGarageArea'] = data['GarageArea'].apply(lambda x: 0 if x == 0 else 1)
 data['hasScreenPorch'] = data['ScreenPorch'].apply(lambda x: 0 if x == 0 else 1)
 data['isOverallQualLow'] = data['OverallQual'].apply(lambda x: 1 if x <= 2 else 0)
+# data['hasHighOverallCond'] = data['OverallCond'].apply(lambda x: 1 if x >= 7 and x <= 9 else 0)
 data['isHighPriceMonth'] = data['MoSold'].apply(lambda x: 1 if x >= 7 and x <= 9 else 0)
 data['YrSoldBuket'] = pd.cut(data.YrSold, 10, labels=range(10))
 data['YearBuiltBuket'] = pd.cut(data.YearBuilt, 10, labels=range(10))
@@ -216,7 +220,7 @@ categoric_features = [u'MSZoning', u'Street', u'Alley', u'LotShape', u'LandConto
                       u'Condition1', u'Condition2', u'BldgType', u'HouseStyle', u'RoofStyle',
                       u'RoofMatl', u'Exterior1st', u'Exterior2nd', u'MasVnrType',
                       u'Foundation', u'Heating', u'Electrical', u'Functional',
-                      u'GarageType', u'MiscFeature', u'SaleType',
+                      u'GarageType', u'MiscFeature', u'SaleType', #u'BsmtFinType1',
                       u'SaleCondition', u'OverallCond', u'YrSoldBuket', u'YearBuiltBuket', u'GarageYrBltBuket', u'MSSubClass']
 
 for feature in categoric_features:
