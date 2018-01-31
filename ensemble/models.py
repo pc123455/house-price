@@ -8,6 +8,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn import cross_validation
 import xgboost as xgb
+from sklearn.model_selection import KFold
 
 class EnsenbleModel:
 
@@ -70,8 +71,8 @@ class EnsenbleModel:
                                      seed=1440,
                                      eval_metric = 'rmse',
                                      missing=None)
-        # self.models = {'ridge': model_ridge, 'lasso': model_lasso, 'lgb': model_lgb, 'xgb': model_linear_xgb}
-        self.models = {'lasso': model_lasso}
+        self.models = {'ridge': model_ridge, 'lasso': model_lasso, 'lgb': model_lgb, 'xgb': model_linear_xgb}
+        # self.models = {'lasso': model_lasso}
 
     def fit(self, X, y, **kwargs):
         for k, m in self.models.items():
@@ -91,6 +92,61 @@ class EnsenbleModel:
         for i, m in enumerate(self.models.values()):
             predictions[:, i] = m.predict(X)
         return np.mean(predictions, axis = 1)
+
+    def multi_predict(self, X):
+        predictions = np.zeros((X.shape[0], len(self.models)))
+        for i, m in enumerate(self.models.values()):
+            predictions[:, i] = m.predict(X)
+        return predictions
+
+    def get_params(self, deep = False):
+        return { 'alpha': 1 }
+
+
+class Stacking:
+
+    def __init__(self, kfold = 5, **kwargs):
+        self.kfold = kfold
+        self.models = list()
+
+    def fit(self, X, y, **kwargs):
+        kf = KFold(n_splits=self.kfold, shuffle=False)
+        predictions = None
+        new_y = np.array([])
+
+        #1st layer
+        for train_idx, test_idx in kf.split(X):
+            train_X = X[train_idx]
+            train_y = y[train_idx]
+            test_X = X[test_idx]
+            test_y = y[test_idx]
+
+            model = EnsenbleModel()
+            model.fit(train_X, train_y)
+            self.models.append(model)
+            predict = model.multi_predict(test_X)
+            if predictions is None:
+                predictions = predict
+            else:
+                predictions = np.concatenate((predictions, predict), axis = 0)
+            new_y = np.concatenate((new_y, test_y))
+
+        #2nd layer
+        self.second_layer_model = linear_model.Ridge(alpha=0)
+        self.second_layer_model.fit(predictions, new_y)
+
+    def predict(self, X):
+        predictions = None
+        for m in self.models:
+            p = m.multi_predict(X)
+            if predictions is None:
+                predictions = p
+            else:
+                predictions += p
+
+        predictions /= len(self.models)
+
+        return self.second_layer_model.predict(predictions)
 
     def get_params(self, deep = False):
         return { 'alpha': 1 }
