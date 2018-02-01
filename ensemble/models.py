@@ -13,8 +13,9 @@ from sklearn.model_selection import KFold
 class EnsenbleModel:
 
     def __init__(self, **kwargs):
-        model_ridge = Pipeline([('poly', PolynomialFeatures(degree=2)),
-                      ('ridge', linear_model.Ridge(alpha=200, copy_X=True))])
+        # model_ridge = Pipeline([('poly', PolynomialFeatures(degree=2)),
+        #               ('ridge', linear_model.Ridge(alpha=200, copy_X=True))])
+        model_ridge = linear_model.Ridge(alpha=5, copy_X=True)
         model_lasso = linear_model.Lasso(alpha=0.0001, copy_X=True)
         model_lgb = lgb.LGBMRegressor(boosting_type='gbdt',
                                       objective='regression',
@@ -24,17 +25,17 @@ class EnsenbleModel:
                                       num_leaves=5,
                                       max_depth=3,
                                       learning_rate=0.01,
-                                      feature_fraction=0.5,
-                                      bagging_fraction=0.5,
-                                      bagging_freq=3,
+                                      feature_fraction=0.25,
+                                      bagging_fraction=0.8,
+                                      bagging_freq=1,
                                       verbose=0,
                                       num_threads=2,
-                                      lambda_l1=0.05,
-                                      lambda_l2 = 1,
-                                      min_data_in_leaf=10,
+                                      lambda_l1=0.005,
+                                      lambda_l2 = 0.8,
+                                      min_data_in_leaf=8,
                                       bagging_seed=3,
                                       early_stopping_round=100,
-                                      min_data_per_group=10)
+                                      min_data_per_group=8)
         model_xgb = xgb.XGBRegressor(max_depth=2,
                                     learning_rate=0.01,
                                     n_estimators=5000,
@@ -43,7 +44,7 @@ class EnsenbleModel:
                                     gamma=0.01,
                                     min_child_weight=10,
                                     max_delta_step=0,
-                                    subsample=0.70,
+                                    subsample=0.30,
                                     colsample_bytree=0.5,
                                     colsample_bylevel=0.5,
                                     reg_alpha=0.01,
@@ -54,7 +55,7 @@ class EnsenbleModel:
         model_linear_xgb = xgb.XGBRegressor(max_depth=3,
                                      booster='gblinear',
                                      silent = 0,
-                                     learning_rate=0.9,
+                                     learning_rate=0.8,
                                      n_estimators=5000,
                                      early_stopping_rounds = 10,
                                      objective='reg:linear',
@@ -62,17 +63,17 @@ class EnsenbleModel:
                                      gamma=0.01,
                                      min_child_weight=10,
                                      max_delta_step=0,
-                                     subsample=0.60,
+                                     subsample=0.3,
                                      colsample_bytree=0.5,
                                      colsample_bylevel=0.5,
-                                     reg_alpha=0.01,
+                                     reg_alpha=0.14,
                                      reg_lambda=1,
                                      scale_pos_weight=1,
                                      seed=1440,
                                      eval_metric = 'rmse',
                                      missing=None)
         self.models = {'ridge': model_ridge, 'lasso': model_lasso, 'lgb': model_lgb, 'xgb_linear': model_linear_xgb}
-        # self.models = {'lgb': model_lgb}
+        # self.models = {'xgb_linear': model_linear_xgb}
 
     def fit(self, X, y, **kwargs):
         for k, m in self.models.items():
@@ -83,7 +84,7 @@ class EnsenbleModel:
             elif k == 'xgb' or k == 'xgb_linear':
                 train_X, val_X = cross_validation.train_test_split(X, test_size=0.3, random_state=0)
                 train_y, val_y = cross_validation.train_test_split(y, test_size=0.3, random_state=0)
-                m.fit(train_X, train_y, eval_set = [(val_X, val_y)])
+                m.fit(X, y)
             else:
                 m.fit(X, y)
 
