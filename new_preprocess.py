@@ -193,7 +193,7 @@ index = [u'LotFrontage', u'LotArea', u'YearBuilt', u'YearRemodAdd', u'MasVnrArea
        u'WoodDeckSF', u'OpenPorchSF', u'EnclosedPorch', u'3SsnPorch',
        u'ScreenPorch', u'PoolArea', u'MiscVal', u'MoSold', u'YrSold']
 skewness = data[index].skew().sort_values()
-features = skewness[np.abs(skewness) > 1].index
+features = skewness[np.abs(skewness) > 0.75].index
 lam = 0.15
 for feat in features:
     data[feat] = boxcox1p(data[feat], lam)
@@ -205,8 +205,7 @@ standardizing_features = [u'LotFrontage', u'LotArea', u'YearBuilt', u'YearRemodA
        u'KitchenAbvGr', u'TotRmsAbvGrd', u'Fireplaces',
        u'FireplaceQu', u'GarageYrBlt', u'GarageCars', u'GarageArea',
        u'WoodDeckSF', u'OpenPorchSF', u'EnclosedPorch', u'3SsnPorch',
-       u'ScreenPorch', u'PoolArea', u'MiscVal', u'MoSold',
-       u'YrSold']
+       u'ScreenPorch', u'PoolArea', u'MiscVal']
 data.loc[:, standardizing_features], scaler = normalization(data.loc[:, standardizing_features])
 
 data.drop(['YrSold'], axis = 1, inplace = True)
