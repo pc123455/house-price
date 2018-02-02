@@ -4,7 +4,7 @@
 import pandas as pd
 from pandas import DataFrame
 from config import data_prefix
-from ensemble.models import EnsenbleModel
+from ensemble.models import EnsembleModel
 import numpy as np
 from sklearn.externals import joblib
 
